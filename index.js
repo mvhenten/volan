@@ -62,12 +62,7 @@ function property(key, def) {
 }
 
 function properties(def) {
-    var proto = {
-        __meta__: {
-            value: null,
-            writable: true
-        }
-    };
+    var proto = {};
     for (var key in def) proto[key] = property(key, def);
     return proto;
 }
@@ -76,10 +71,12 @@ var Volan = {
     extend: function(spr, def) {
         var attributes = Object.keys(def),
             ctor = function(args) {
-                this.__meta__ = function(key, value) {
-                    if (value !== undefined) this[key] = value;
-                    return this[key];
-                }.bind({});
+                if (!this.__meta__) Object.defineProperty(this, '__meta__', {
+                    value: function(key, value) {
+                        if (value !== undefined) this[key] = value;
+                        return this[key];
+                    }.bind({})
+                });
 
                 if (typeof spr === 'function') spr.apply(this, arguments);
 
@@ -94,7 +91,6 @@ var Volan = {
         ctor.prototype = Object.create(spr.prototype || {}, properties(def));
         return ctor;
     },
-
     create: function(def) {
         return Volan.extend({}, def);
     }
