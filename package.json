@@ -1,0 +1,26 @@
+{
+    "name": "volan",
+    "version": "0.0.1",
+    "description": "Mythical flying fish",
+    "main": "index.js",
+    "scripts": {
+        "test": "./node_modules/mocha/bin/mocha -u tdd -R spec test"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git://github.com/mvhenten/volan.git"
+    },
+    "author": "",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/mvhenten/volan/issues"
+    },
+    "homepage": "https://github.com/mvhenten/volan",
+    "devDependencies": {
+        "js-beautify": "^1.4.2",
+        "jshint": "^2.5.0",
+        "mocha": "^1.18.2",
+        "lodash": "^2.4.1",
+        "Faker": "^0.7.0"
+    }
+}
