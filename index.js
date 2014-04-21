@@ -7,15 +7,8 @@ function format(tpl) {
 
 function isPlainFunction(value) {
     var own = Object.getOwnPropertyNames((value || {}).prototype || {});
-
-    if (typeof value !== 'function') return false;
-    if (own.length >= 2 || (own.indexOf('constructor') < 0 && own.length >= 1)) return false;
-
-    return Object.getPrototypeOf(value.prototype) === Object.prototype;
-}
-
-function isBuiltIn(value) {
-    return /^(Boolean|Number|String|RegExp|Array|Object|Date)$/.test(value.name);
+    if (typeof value !== 'function' || value.name) return false;
+    return own.length === 1 && own[0] === 'constructor';
 }
 
 function isTypeOf(value) {
@@ -26,32 +19,40 @@ function isInstanceOf(value) {
     return value instanceof this;
 }
 
+function isWritable(def, name) {
+    var desc = Object.getOwnPropertyDescriptor(def, name).value;
+    return desc.set !== undefined || desc.writable;
+}
+
 function property(key, def) {
     var prop = Object.getOwnPropertyDescriptor(def, key),
         check = prop.value;
 
-    if (!check || !prop.writable) return prop;
-    if (prop.get || prop.set) return prop;
-    if (/^number|string|boolean$/.test(typeof check)) return prop;
-    if (!check.name && isPlainFunction(check)) return prop;
+    if (check && check.type) prop = check, check = check.type;
+
+    if ((check === null || check === undefined) || !prop.writable || prop.get || prop.set) return prop;
+    if (/^number|string|boolean$/.test(typeof check) || isPlainFunction(check))
+        return {
+            writable: false,
+            value: check
+        };
 
     if (check instanceof RegExp) {
-        check = check.test.bind(check);
-        check.__type = format('value matching "%s"', check);
+        check = check.test.bind(check), check.__type = format('value matching "%s"', prop.value);
     }
 
-    if (check.name === undefined || isBuiltIn(check)) {
-        var o = check;
-        if (/^Boolean|Number|String$/.test(check.name)) check = isTypeOf.bind(o);
-        else check = isInstanceOf.bind(o);
-        check.__type = o.name || o + '';
+    if (check.name === undefined || /^(Boolean|Number|String|RegExp|Array|Object|Date)$/.test(check.name)) {
+        if (/^Boolean|Number|String$/.test(check.name)) check = isTypeOf.bind(check);
+        else check = isInstanceOf.bind(check);
+        check.__type = prop.value.name || prop.value + '';
     }
 
     check.__name = key;
 
     return {
         get: function() {
-            return this.__meta__(key);
+            var value = this.__meta__(key);
+            return value !== undefined ? value : prop.value;
         },
 
         set: function(value) {
@@ -67,10 +68,12 @@ function properties(def) {
     return proto;
 }
 
-var Volan = {
+module.exports = {
     extend: function(spr, def) {
-        var attributes = Object.keys(def),
+        var props = properties(def),
             ctor = function(args) {
+                args = args || {};
+
                 if (!this.__meta__) Object.defineProperty(this, '__meta__', {
                     value: function(key, value) {
                         if (value !== undefined) this[key] = value;
@@ -80,20 +83,21 @@ var Volan = {
 
                 if (typeof spr === 'function') spr.apply(this, arguments);
 
-                for (var i = 0; i < attributes.length; i++) {
-                    var key = attributes[i];
-                    if (args && args[key] !== undefined) this[key] = args[key];
+                for (var key in props) {
+                    if (args[key] === undefined) {
+                        if (!isWritable(props, key) || def[key].required === false) continue;
+                    }
+
+                    this[key] = args[key];
                 }
 
                 Object.freeze(this);
             };
 
-        ctor.prototype = Object.create(spr.prototype || {}, properties(def));
+        ctor.prototype = Object.create(spr.prototype || {}, props);
         return ctor;
     },
     create: function(def) {
-        return Volan.extend({}, def);
+        return module.exports.extend({}, def);
     }
 };
-
-module.exports = Volan;

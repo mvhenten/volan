@@ -18,6 +18,10 @@ suite('Volan constructors and tests', function() {
             }
         });
 
+        var ok = new Thing({
+            test: 1
+        });
+
         assert.throws(function() {
             var test = new Thing({
                 cantouchthis: 1
@@ -149,9 +153,11 @@ suite('Volan constructors and tests', function() {
                 },
             });
 
-            var thing = new Thing();
+            var thing = new Thing({
+                count: 42
+            });
 
-            thing.count = 42;
+            thing.count = 82;
 
             if (value < 0) {
                 assert.throws(function() {
@@ -251,4 +257,52 @@ suite('Volan constructors and tests', function() {
         assert.equal(point.z, 4);
         assert.equal(point.y, 2);
     });
+
+    test('RegExp is handled as a type', function() {
+        var Whole = Volan.create({
+            num: /^\d+$/
+        });
+
+        var w = new Whole({
+            num: 1
+        });
+
+        assert.throws(function() {
+            var w = new Whole({
+                num: 1.2
+            });
+        }, /a value matching/)
+    })
+
+    test('Attributes are required by default', function() {
+        var Thing = Volan.create({
+            num: Number
+        });
+        assert.throws(function() {
+            var x = new Thing();
+        }, /TypeError: Validation failed for "num", value "undefined" is not a Number/)
+    })
+
+    test('Attributes may be not required', function() {
+        var Thing = Volan.create({
+            num: {
+                type: /\d+/,
+                value: 42,
+                writable: true,
+                required: false
+            }
+        });
+
+        var x = new Thing();
+
+        assert.equal(x.num, 42);
+
+        var y = new Thing({
+            num: 99
+        });
+
+        assert.equal(y.num, 99);
+
+    })
+
 });
