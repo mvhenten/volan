@@ -11,6 +11,22 @@ var Point = Volan.create({
 });
 
 suite('Volan constructors and tests', function() {
+    test('REGRESSION, nested types', function() {
+        var O = Volan.create({
+            x: Point,
+        });
+
+        var x = new O({
+            x: new Point({
+                x: 1,
+                y: 2
+            })
+        });
+
+        assert.ok(x);
+
+    });
+
     test('REGRESSION: getters must not be triggerd in create', function() {
         var Thing = Volan.create({
             get cantouchthis() {
@@ -22,11 +38,15 @@ suite('Volan constructors and tests', function() {
             test: 1
         });
 
+        assert.ok(ok);
+
         assert.throws(function() {
             var test = new Thing({
                 cantouchthis: 1
             });
-        }, /TypeError: Cannot set property cantouchthis/)
+
+            assert.ok(test);
+        }, /TypeError: Cannot set property cantouchthis/);
     });
 
 
@@ -267,12 +287,16 @@ suite('Volan constructors and tests', function() {
             num: 1
         });
 
+        assert.ok(w);
+
         assert.throws(function() {
             var w = new Whole({
                 num: 1.2
             });
-        }, /a value matching/)
-    })
+
+            assert.ok(w);
+        }, /a value matching/);
+    });
 
     test('Attributes are required by default', function() {
         var Thing = Volan.create({
@@ -280,8 +304,9 @@ suite('Volan constructors and tests', function() {
         });
         assert.throws(function() {
             var x = new Thing();
-        }, /TypeError: Validation failed for "num", value "undefined" is not a Number/)
-    })
+            assert.ok(x);
+        }, /TypeError: Validation failed for "num", value "undefined" is not a Number/);
+    });
 
     test('Attributes may be not required', function() {
         var Thing = Volan.create({
@@ -303,6 +328,6 @@ suite('Volan constructors and tests', function() {
 
         assert.equal(y.num, 99);
 
-    })
+    });
 
 });

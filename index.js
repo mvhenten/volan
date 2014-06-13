@@ -12,10 +12,12 @@ function isPlainFunction(value) {
 }
 
 function isTypeOf(value) {
+    /* jshint -W040 */
     return typeof value === this.name.toLowerCase();
 }
 
 function isInstanceOf(value) {
+    /* jshint -W040 */
     return value instanceof this;
 }
 
@@ -24,42 +26,44 @@ function isWritable(def, name) {
     return desc.set !== undefined || desc.writable;
 }
 
+function getterSetter(name, check, type, defVal) {
+    return {
+        get: function() {
+            var value = this.__meta__(name);
+            return value !== undefined ? value : defVal;
+        },
+
+        set: function(value) {
+            if (check(value)) return this.__meta__(name, value);
+            throw new TypeError(format('Validation failed for "%s", value "%s" is not a %s', name, value, type));
+        }
+    };
+}
+
 function property(key, def) {
     var prop = Object.getOwnPropertyDescriptor(def, key),
         check = prop.value;
 
-    if (check && check.type) prop = check, check = check.type;
+    if (check && check.type) check = (prop = check, check.type);
 
     if ((check === null || check === undefined) || !prop.writable || prop.get || prop.set) return prop;
+
     if (/^number|string|boolean$/.test(typeof check) || isPlainFunction(check))
         return {
             writable: false,
             value: check
         };
 
-    if (check instanceof RegExp) {
-        check = check.test.bind(check), check.__type = format('value matching "%s"', prop.value);
-    }
+    if (check instanceof RegExp)
+        return getterSetter(key, check.test.bind(check), format('value matching "%s"', prop.value), prop.value);
 
-    if (check.name === undefined || /^(Boolean|Number|String|RegExp|Array|Object|Date)$/.test(check.name)) {
-        if (/^Boolean|Number|String$/.test(check.name)) check = isTypeOf.bind(check);
-        else check = isInstanceOf.bind(check);
-        check.__type = prop.value.name || prop.value + '';
-    }
+    if (/^(Boolean|Number|String|RegExp|Array|Object|Date)$/.test(check.name))
+        return getterSetter(key, isTypeOf.bind(check), prop.value.name || prop.value + '', prop.value);
 
-    check.__name = key;
+    if (check.name === '')
+        return getterSetter(key, isInstanceOf.bind(check), prop.value.name || prop.value + '', prop.value);
 
-    return {
-        get: function() {
-            var value = this.__meta__(key);
-            return value !== undefined ? value : prop.value;
-        },
-
-        set: function(value) {
-            if (check(value)) return this.__meta__(key, value);
-            throw new TypeError(format('Validation failed for "%s", value "%s" is not a %s', check.__name, value, check.__type || check.name));
-        }
-    };
+    return getterSetter(key, check, check.name, prop.value);
 }
 
 function properties(def) {
