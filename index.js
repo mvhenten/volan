@@ -86,6 +86,9 @@ module.exports = {
                 });
 
                 if (typeof spr === 'function') {
+                    Object.defineProperty(this, '__super', {
+                        value: spr
+                    });
                     spr.apply(this, arguments);
                 }
 

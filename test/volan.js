@@ -10,6 +10,74 @@ var Point = Volan.create({
     y: Number
 });
 
+test('Extending example readme', function(assert) {
+    // back to the classic example...
+    var Point = Volan.create({
+        x: Number,
+
+        y: Number,
+
+        get xy() {
+            return [this.x, this.y];
+        }
+    });
+
+    // using classic extend...
+    _.extend(Point.prototype, {
+        move: function(x, y) {
+            this.x = x;
+            this.y = y;
+        }
+    });
+
+    var p = new Point({
+        x: 1,
+        y: 2
+    });
+
+    assert.equal(p.x, 1);
+    assert.equal(p.y, 2);
+
+    p.move(10, 20);
+
+    assert.equal(p.x, 10);
+    assert.equal(p.y, 20);
+
+    assert.end();
+});
+
+test('Extending javascript vanilla class', function(assert) {
+    var Email = function() { /** intializing mail backend **/ };
+
+    Email.prototype = {
+        subject: 'Hello',
+
+        send: function(to) {
+            // some logic for sending...
+            return this.subject + ' send email to: ' + to;
+        }
+    };
+
+    var EmailChild = Volan.extend(Email, {
+        subject: String,
+
+        to: new RegExp(/.+@.+/), // really lame check for email
+
+        send: function() {
+            // need to call super's prototype.send as a method of our own
+            return this.__super.prototype.send.call(this, this.to);
+        }
+    });
+
+    var m = new EmailChild({
+        to: 'someone@example.com',
+        subject: 'Your new class'
+    });
+
+    assert.equal(m.send(), 'Your new class send email to: someone@example.com');
+    assert.end();
+});
+
 test('REGRESSION, nested types', function(assert) {
     var O = Volan.create({
         x: Point,
