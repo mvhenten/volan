@@ -282,19 +282,18 @@ Examples:
 
 ```
 
-Here's an example use case for extending non-volan classes:
+Here's an (contrived) example use case for extending non-volan classes:
 
 ```javascript
 
-    var Email = function(){ //..
-    };
+    var Email = function(){}
 
     Email.prototype = {
         subject: 'Hello',
 
         send: function( to ){
             // some logic for sending...
-            return 'Email ' + subject + ' send to: ' + to;
+            return this.subject + ' send email to: ' + to;
         }
     };
 
@@ -304,8 +303,8 @@ Here's an example use case for extending non-volan classes:
         to: new RegExp(/.+@.+/), // really lame check for email
 
         send: function(){
-            this.__SUPER.subject = this.subject;
-            this.__SUPER.send(this.to);
+            // need to call super's prototype.send as a method of our own
+            return this.__super.prototype.send.call( this, this.to );
         }
     });
 
@@ -313,6 +312,8 @@ Here's an example use case for extending non-volan classes:
         to: 'someone@example.com',
         subject: 'Your new class'
     });
+
+    assert.equal( m.send(), 'Your new class send email to: someone@example.com' );
 
 ```
 
