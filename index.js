@@ -85,7 +85,9 @@ module.exports = {
                     }.bind({})
                 });
 
-                if (typeof spr === 'function') spr.apply(this, arguments);
+                if (typeof spr === 'function') {
+                    spr.apply(this, arguments);
+                }
 
                 for (var key in props) {
                     if (args[key] === undefined) {
@@ -99,6 +101,8 @@ module.exports = {
             };
 
         ctor.prototype = Object.create(spr.prototype || {}, props);
+        ctor.__super = spr;
+
         return ctor;
     },
     create: function(def) {
