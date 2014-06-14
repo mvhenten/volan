@@ -1,6 +1,8 @@
 volan
 =====
 
+[![Build Status](https://drone.io/github.com/mvhenten/volan/status.png)](https://drone.io/github.com/mvhenten/volan/latest)
+
 Meta classes and typechecks in ~100 lines of code for ES5
 
 Volan adds a wrapper around simple javascript function constructor, providing type-checks
