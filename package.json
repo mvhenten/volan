@@ -4,7 +4,8 @@
     "description": "Mythical flying fish",
     "main": "index.js",
     "scripts": {
-        "test": "node test/volan.js"
+        "test": "node test/volan.js",
+        "build-browser-test": "node ./node_modules/browserify/bin/cmd.js test/volan.js -o dist/test.js"
     },
     "repository": {
         "type": "git",
@@ -21,6 +22,7 @@
         "jshint": "^2.5.0",
         "lodash": "^2.4.1",
         "Faker": "^0.7.0",
-        "tape": "^2.13.3"
+        "tape": "^2.13.3",
+        "browserify": "^4.1.10"
     }
 }

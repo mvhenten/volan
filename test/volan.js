@@ -107,13 +107,14 @@ test('REGRESSION: getters must not be triggerd in create', function(assert) {
 
     assert.ok(ok);
 
+    // error is browser specific!
     assert.throws(function() {
         var test = new Thing({
             cantouchthis: 1
         });
 
         assert.ok(test);
-    }, /TypeError: Cannot set property cantouchthis/);
+    }, /(TypeError: Cannot set property cantouchthis)||(setting a property that has only a getter)/);
     assert.end();
 });
 
