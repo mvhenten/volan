@@ -1,6 +1,6 @@
 {
     "name": "volan",
-    "version": "0.0.2",
+    "version": "0.0.3",
     "description": "Mythical flying fish",
     "main": "index.js",
     "scripts": {
