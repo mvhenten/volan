@@ -40,6 +40,11 @@ function getterSetter(name, check, type, defVal) {
     };
 }
 
+function typeName(check) {
+    var str = check.prototype.toString();
+    return str === '[object Object]' ? check.name : str;
+}
+
 function property(key, def) {
     var prop = Object.getOwnPropertyDescriptor(def, key),
         check = prop.value;
@@ -58,12 +63,12 @@ function property(key, def) {
         return getterSetter(key, check.test.bind(check), format('value matching "%s"', prop.value), prop.value);
 
     if (/^(Boolean|Number|String|RegExp|Array|Object|Date)$/.test(check.name))
-        return getterSetter(key, isTypeOf.bind(check), prop.value.name || prop.value + '', prop.value);
+        return getterSetter(key, isTypeOf.bind(check), prop.value.name, prop.value);
 
     if (check.name === '')
-        return getterSetter(key, isInstanceOf.bind(check), prop.value.name || prop.value + '', prop.value);
+        return getterSetter(key, isInstanceOf.bind(check), 'instanceof ' + prop.value.prototype.toString(), prop.value);
 
-    return getterSetter(key, check, check.name, prop.value);
+    return getterSetter(key, check, typeName(check), prop.value);
 }
 
 function properties(def) {

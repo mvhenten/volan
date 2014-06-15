@@ -10,6 +10,56 @@ var Point = Volan.create({
     y: Number
 });
 
+test('Freestyle beautiful error messages', function(assert) {
+    function annotate(name, type) {
+        type.prototype.toString = function() {
+            return name;
+        };
+    }
+
+    function tn(type) {
+        return type.name || type.prototype.toString();
+    }
+
+    var Point = Volan.create({
+        x: Number,
+        y: Number
+    });
+
+    annotate('Point', Point);
+
+    function PositiveInt() {}
+
+    var Special = function(type) {
+        var check = function Special(val) {
+            return !val;
+        };
+
+        check.prototype.toString = function() {
+            return 'Special[' + tn(type) + ']';
+        };
+
+        return check;
+    };
+
+    var types = [PositiveInt, String, Boolean, Function, RegExp, Date, Object, Point];
+
+    types.forEach(function(type) {
+        var Thing = Volan.create({
+            /* jshint -W064 */
+            point: Special(type),
+        });
+
+        assert.throws(function() {
+            new Thing({
+                point: 1
+            });
+        }, 'Validation failed for "point", value "1" is not a Special[' + tn(type) + ']');
+    });
+
+    assert.end();
+});
+
 test('using __super multiple levels', function(assert) {
 
     var Point3D = Volan.extend(Point, {
@@ -178,6 +228,7 @@ test('REGRESSION: getters must not be triggerd in create', function(assert) {
 
         assert.ok(test);
     }, /(TypeError: Cannot set property cantouchthis)||(setting a property that has only a getter)/);
+
     assert.end();
 });
 
