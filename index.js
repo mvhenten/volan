@@ -85,12 +85,17 @@ module.exports = {
                     }.bind({})
                 });
 
-                if (typeof spr === 'function') {
-                    Object.defineProperty(this, '__super', {
-                        value: spr
-                    });
-                    spr.apply(this, arguments);
+                if (typeof this.__buildargs === 'function') {
+                    args = this.__buildargs.apply(null, arguments);
+
+                    if (typeof ctor.__super !== 'function')
+                        Object.defineProperty(this, '__buildargs', {
+                            value: null
+                        });
                 }
+
+                if (typeof ctor.__super === 'function')
+                    ctor.__super.apply(this, arguments);
 
                 for (var key in props) {
                     if (args[key] === undefined) {

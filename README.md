@@ -3,7 +3,7 @@ volan
 
 [![Build Status](https://drone.io/github.com/mvhenten/volan/status.png)](https://drone.io/github.com/mvhenten/volan/latest)
 
-Meta classes and typechecks in ~100 lines of code for ES5
+Meta classes and typechecks in ~100&diams; lines of code for ES5
 
 Volan adds a wrapper around simple javascript function constructor, providing type-checks
 for javascript's native objects and more.
@@ -12,6 +12,8 @@ It does so by converting object properties to es5 *getters* and *setters*. It's 
 to typescript's interfaces but with runtime type checking. It implements a simple
 [Meta Object Protocol](https://en.wikipedia.org/wiki/Metaobject), much inspired by the
 [Moose Object System for Perl](http://moose.iinteractive.com/en/).
+
+*( &diams; some whitespace has been maintained for readability - don't argue with `js-beautify`)*
 
 ## Install
 
@@ -236,6 +238,34 @@ A composite typecheck may be written as such:
 
 ```
 
+### Transforming arguments
+
+Sometimes, it is desirable to transform constructor arguments before they are applied.
+
+Volan provides a special hook called `__buildargs`. This function is only
+executed once before applying the arguments, allowing you to transform them.
+
+Supposed we'd like the `Point` example to transform it's first two arguments to respectively
+`x` and `y`.
+
+```javascript
+    var Augumented = Volan.extend( Point, {
+        __buildargs: function( x, y ){
+            return { x: x, y: y };
+        }
+    });
+
+    var p = new Augumented( 10, 20 );
+
+    console.log( p.x, p.y );
+    // 10, 20 as expected
+
+```
+
+Note that `__buildargs` is invoked without the `this`. `__buildargs` is removed from the
+object after construction, but this behaviour cannot be guaranteed for classes extended from
+vanilla js.
+
 ### Inheritance
 
 Glad you've asked!
@@ -281,6 +311,25 @@ Examples:
             return [this.x, this.y, this.z];
         }
     });
+
+```
+
+#### Inheritance chains
+
+Each class in the chain keeps a reference to it's own super:
+
+```javascript
+    var Point3DInTime = Volan.extend( Point3D, {
+        __buildargs: function(x,y,z,t){
+          return { x: x, y: y, z: z, t: t };
+        },
+        t: Number,
+    });
+
+    var p = new Point3DInTime( 1, 2, 3, 4 );
+
+    console.log( p.x, p.y, p.z, p.t );
+    // 1, 2, 3, 4
 
 ```
 

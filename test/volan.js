@@ -10,6 +10,68 @@ var Point = Volan.create({
     y: Number
 });
 
+test('using __super multiple levels', function(assert) {
+
+    var Point3D = Volan.extend(Point, {
+        z: Number,
+    });
+
+    var Point3DInTime = Volan.extend(Point3D, {
+        __buildargs: function(x, y, z, t) {
+            return {
+                x: x,
+                y: y,
+                z: z,
+                t: t
+            };
+        },
+        t: Number,
+    });
+
+    _.times(10, function() {
+        var a = _.random(0, 99),
+            b = _.random(0, 99),
+            c = _.random(0, 99),
+            d = _.random(0, 99);
+        var p = new Point3DInTime(a, b, c, d);
+
+        assert.equal(p.x, a);
+        assert.equal(p.y, b);
+        assert.equal(p.z, c);
+        assert.equal(p.t, d);
+    });
+
+    assert.end();
+});
+
+test('use __buildargs to override arguments', function(assert) {
+    var Augumented = Volan.extend(Point, {
+        __buildargs: function(x, y, z) {
+            return {
+                x: x,
+                y: y,
+                z: z
+            };
+        },
+
+        z: Number,
+    });
+
+    _.times(10, function() {
+        var a = _.random(0, 99),
+            b = _.random(0, 99),
+            c = _.random(0, 99);
+
+        var p = new Augumented(a, b, c);
+
+        assert.equal(p.x, a);
+        assert.equal(p.y, b);
+        assert.equal(p.__buildargs, null);
+    });
+
+    assert.end();
+});
+
 test('Extending example readme', function(assert) {
     // back to the classic example...
     var Point = Volan.create({
@@ -65,7 +127,8 @@ test('Extending javascript vanilla class', function(assert) {
 
         send: function() {
             // need to call super's prototype.send as a method of our own
-            return this.__super.prototype.send.call(this, this.to);
+            console.log(this.__super);
+            return EmailChild.__super.prototype.send.call(this, this.to);
         }
     });
 
