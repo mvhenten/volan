@@ -1,4 +1,5 @@
-Post Moder Objects in Javascript
+## Post Modern Objects in Javascript
+### _Or how to stop using ES3 Objects_
 
 Ok, well, first i'd like to explain the term "Post Modern". I've borrowed this term from a Perl framework called Moose, which in turn draws inspiration from a new programming language called Perl 6. That still doesn't explain the term "Post Modern". So here I go:
 
@@ -401,6 +402,69 @@ var Counter = create({
         return this.__set('current', this.current + this.incr);
     }
 });
+```
+
+Now, let's look at the work we need to do in our little create function:
+
+```javascript
+'use strict';
+
+function create(def) {
+    var proto = Object.keys(def).reduce(function(proto, key) {
+        var desc = Object.getOwnPropertyDescriptor(def, key);
+
+        // if not writable, don't touch it
+        if (!desc.writable) {
+            proto[key] = desc;
+            return proto;
+        }
+
+        // a method, let's protect it
+        if (desc.value instanceof Function) {
+            //console.log( key, desc );
+            //desc.writable = false;
+            proto[key] = desc;
+
+            return proto;
+        }
+
+        proto[key] = {
+            get: function() {
+                return this.__get(key);
+            }
+        };
+
+        return proto;
+    }, {});
+
+    var me = function(named) {
+        named = named || {};
+
+        var values = Object.keys(def).reduce(function(values, key) {
+            values[key] = named[key] || def[key];
+
+            return values;
+        }, {});
+
+        Object.defineProperties(this, {
+            __get: {
+                value: function(name) {
+                    return values[name];
+                }
+            },
+
+            __set: {
+                value: function(name, value) {
+                    return values[name] = value;
+                }
+            }
+        });
+    };
+
+    Object.defineProperties(me.prototype, proto);
+
+    return me;
+}
 ```
 
 
