@@ -3,10 +3,13 @@
 
 Ok, well, first i'd like to explain the term "Post Modern". I've borrowed this term from a Perl framework called Moose, which in turn draws inspiration from a new programming language called Perl 6. That still doesn't explain the term "Post Modern". So here I go:
 
-Noun	1.	postmodernism - genre of art and literature and especially architecture in reaction against principles and practices of established modernism.
+## Postmodernism
+
+1. a late 20th-century style and concept in the arts, architecture, and criticism, which represents a departure from modernism and is characterized by the self-conscious use of earlier styles and conventions, a mixing of different artistic styles and media, and a general distrust of theories.
+
+----
 
 The third edition of ECMA-262 was published on December 1999. I think we may consider ES3 as the "Modern" version of Javascript, as we have learned to work with, grew up with, and dealth with most of the past decade. Today, ES6 is under heavy, active development, while full ES5 is becoming widely available and even mainstream with the swift dissapearance of IE8. The javascript landscape is mutating rapidly, resulting into a cambrium explosion of transpilers, compilers, frameworks, utilities and implementation. And it doesn't seem to slow down.
-
 Therefore, I think we may have entered post-modern times in javascript development.
 
 As we developers start building larger applications, the need to organize code, to create concise API's and enforce proper encapsulation becomes stronger. As this is the MVC meetup, I recon many of you are working with some kind of framework that tries to provide this type of structure.
@@ -160,11 +163,11 @@ This will let us interact with our counter as following:
 
     var counter = new Counter( 10, 99, 3 );
 
-    console.log( counter.increment() ); // 13
-    console.log( counter.current ); // 13
-    console.log( counter.max ); // 16
-    console.log( counter.next ); // 16
-    console.log( counter.last ); // 97
+    counter.increment(); // 13
+    counter.current; // 13
+    counter.max; // 16
+    counter.next; // 16
+    counter.last; // 97
 
 ```
 
@@ -188,36 +191,35 @@ Let's write a little helper that helps us to avoid writing the __get and __set e
 
 ```javascript
 
-    function create(ctor, proto) {
-        var me = function() {
-            var values = ctor.apply(this, arguments);
+function define(ctor, proto) {
+    var me = function() {
+        var values = ctor.apply(this, arguments);
 
-            Object.defineProperties(this, {
-                __get: {
-                    value: function(name) {
-                        return values[name];
-                    }
-                },
-
-                __set: {
-                    value: function(name, value) {
-                        return values[name] = value;
-                    }
+        Object.defineProperties(this, {
+            __get: {
+                value: function(name) {
+                    return values[name];
                 }
-            });
-        };
+            },
 
-        me.prototype = proto;
-
-        return me;
+            __set: {
+                value: function(name, value) {
+                    return values[name] = value;
+                }
+            }
+        });
     };
+
+    me.prototype = proto;
+    return me;
+};
 
 ```
 
 Now we can define our class as such:
 
 ```javascript
-    var Counter = create(function(start, end, increment) {
+    var Counter = define(function(start, end, increment) {
         return {
             start: start || 0,
             current: start || 0,
@@ -288,7 +290,7 @@ This doesn't look very nice, so let's automate it, and move that code to our `cr
 
 ```javascript
 
-function create(ctor, proto) {
+function define(ctor, proto) {
     var me = function() {
         var values = ctor.apply(this, arguments),
             props = {};
@@ -330,7 +332,7 @@ but now with some better encapsulatin'.
 
 
 ```javascript
-    var Counter = create(function(start, end, increment) {
+    var Counter = define(function(start, end, increment) {
         return {
             start: start || 0,
             current: start || 0,
@@ -362,7 +364,7 @@ happen if we need to add more arguments? and how will our code look if we don't 
 Instead, let's move to a concept called *named* arguments:
 
 ```javascript
-var Counter = create(function( named ) {
+var Counter = define(function( named ) {
     named = named || {};
     return {
         start: named.start || 0,
@@ -375,12 +377,26 @@ var Counter = create(function( named ) {
 });
 ```
 
+We can now write:
+
+```javascript
+    var counter = new Counter({ start: 10, end: 99, increment: 3 });
+
+    counter.increment(); // 13
+    counter.current; // 13
+    counter.max; // 16
+    counter.next; // 16
+    counter.last; // 97
+
+```
+
+
 Our little `create` method defines an API where your constructor is supposed to return an object with default variables. Now,
 all fine and clear, but can't this be a little _shorter_ ? Let's define our API first:
 
 
 ```javascript
-var Counter = create({
+var Counter = define({
     start: 0,
 
     current: 0,
@@ -409,7 +425,7 @@ Now, let's look at the work we need to do in our little create function:
 ```javascript
 'use strict';
 
-function create(def) {
+function define(def) {
     var proto = Object.keys(def).reduce(function(proto, key) {
         var desc = Object.getOwnPropertyDescriptor(def, key);
 
