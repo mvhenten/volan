@@ -1,7 +1,7 @@
 {
     "name": "volan",
-    "version": "0.0.3",
-    "description": "Mythical flying fish",
+    "version": "0.0.4",
+    "description": "ES5 Interfaces",
     "main": "index.js",
     "scripts": {
         "test": "node test/volan.js",
