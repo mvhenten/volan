@@ -542,3 +542,17 @@ test('regression: Types must not become values when optional and not set', funct
     assert.equal(t.fuzzBozz, null);
     assert.end();
 });
+
+test('regression: custom attributes writable', function(assert){
+    var Thing = Volan.create({
+        fuzzBozz: function Scalar(value){
+            return ['string','number', 'boolean'].indexOf( typeof value ) !== -1;
+        },
+    });
+
+    var t = new Thing({ fuzzBozz: 1 });
+
+    assert.equal(t.fuzzBozz, 1);
+    assert.end();
+});
+
