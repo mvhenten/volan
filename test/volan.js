@@ -5,6 +5,8 @@ var _ = require('lodash'),
     Faker = require('Faker'),
     Volan = require('../');
 
+var _N_TIMES_ = 3;
+
 var Point = Volan.create({
     x: Number,
     y: Number
@@ -78,7 +80,7 @@ test('using __super multiple levels', function(assert) {
         t: Number,
     });
 
-    _.times(10, function() {
+    _.times(_N_TIMES_, function() {
         var a = _.random(0, 99),
             b = _.random(0, 99),
             c = _.random(0, 99),
@@ -107,7 +109,7 @@ test('use __buildargs to override arguments', function(assert) {
         z: Number,
     });
 
-    _.times(10, function() {
+    _.times(_N_TIMES_, function() {
         var a = _.random(0, 99),
             b = _.random(0, 99),
             c = _.random(0, 99);
@@ -263,7 +265,7 @@ test('Example from the readme: point', function(assert) {
 
 
 test('Instantiate Volan objects', function(assert) {
-    _.times(100, function() {
+    _.times(_N_TIMES_, function() {
         var x = _.random(-999, 999),
             y = _.random(-999, 999);
 
@@ -292,7 +294,7 @@ test('Instantiate Volan objects', function(assert) {
 });
 
 test('With native method allowed', function(assert) {
-    _.times(100, function() {
+    _.times(_N_TIMES_, function() {
         var words = Faker.Lorem.words().join(' ');
 
         var Thing = Volan.create({
@@ -313,7 +315,7 @@ test('With native method allowed', function(assert) {
 });
 
 test('With native getters allowed', function(assert) {
-    _.times(100, function() {
+    _.times(_N_TIMES_, function() {
         var first = Faker.Name.firstName();
         var last = Faker.Name.lastName();
 
@@ -338,7 +340,7 @@ test('With native getters allowed', function(assert) {
 });
 
 test('With native default value allowed', function(assert) {
-    _.times(100, function() {
+    _.times(_N_TIMES_, function() {
         // words or empty string
         var words = Faker.Lorem.words().slice(0, _.random(10)).join(' ');
 
@@ -355,7 +357,7 @@ test('With native default value allowed', function(assert) {
 });
 
 test('With custom type isa', function(assert) {
-    _.times(100, function() {
+    _.times(_N_TIMES_, function() {
         var value = _.random(-999, 999);
 
         var Thing = Volan.create({
@@ -398,7 +400,7 @@ test('Volan extends plain js', function(assert) {
         name: String
     });
 
-    _.times(100, function() {
+    _.times(_N_TIMES_, function() {
         var words = Faker.Lorem.words().join(' '),
             args = {
                 name: words
@@ -429,7 +431,7 @@ test('Volan extends plain js vanilla', function(assert) {
     });
 
 
-    _.times(100, function() {
+    _.times(_N_TIMES_, function() {
         var words = Faker.Lorem.words().join(' '),
             args = {
                 name: words
@@ -525,5 +527,18 @@ test('Attributes may be not required', function(assert) {
     });
 
     assert.equal(y.num, 99);
+    assert.end();
+});
+
+test('regression: Types must not become values when optional and not set', function(assert) {
+    var Thing = Volan.create({
+        fuzzBozz: function NamedType() {
+            return true;
+        }
+    });
+
+    var t = new Thing();
+
+    assert.equal(t.fuzzBozz, null);
     assert.end();
 });

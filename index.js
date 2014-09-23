@@ -7,7 +7,8 @@ function format(tpl) {
 
 function isPlainFunction(value) {
     var own = Object.getOwnPropertyNames((value || {}).prototype || {});
-    if (typeof value !== 'function' || value.name) return false;
+    if (typeof value !== 'function') return false;
+    if (value.name) return false;
     return own.length === 1 && own[0] === 'constructor';
 }
 
@@ -68,7 +69,7 @@ function property(key, def) {
     if (check.name === '')
         return getterSetter(key, isInstanceOf.bind(check), 'instanceof ' + prop.value.prototype.toString(), prop.value);
 
-    return getterSetter(key, check, typeName(check), prop.value);
+    return getterSetter(key, check, typeName(check), check === prop.value ? null : prop.value);
 }
 
 function properties(def) {
